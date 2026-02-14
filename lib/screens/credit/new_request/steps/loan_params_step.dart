@@ -8,10 +8,12 @@ class LoanParamsStep extends StatelessWidget {
   final String currency;
   final String purpose;
   final String termType;
+  final String drawdownPref;
   final ValueChanged<double> onAmountChanged;
   final ValueChanged<String> onCurrencyChanged;
   final ValueChanged<String> onPurposeChanged;
   final ValueChanged<String> onTermTypeChanged;
+  final ValueChanged<String> onDrawdownPrefChanged;
   final VoidCallback onNext;
   final VoidCallback onBack;
 
@@ -21,10 +23,12 @@ class LoanParamsStep extends StatelessWidget {
     required this.currency,
     required this.purpose,
     required this.termType,
+    required this.drawdownPref,
     required this.onAmountChanged,
     required this.onCurrencyChanged,
     required this.onPurposeChanged,
     required this.onTermTypeChanged,
+    required this.onDrawdownPrefChanged,
     required this.onNext,
     required this.onBack,
   });
@@ -193,12 +197,14 @@ class LoanParamsStep extends StatelessWidget {
                       children: [
                         _DrawdownOption(
                           label: 'Full amount',
-                          isSelected: true,
+                          isSelected: drawdownPref == 'Full amount',
+                          onTap: () => onDrawdownPrefChanged('Full amount'),
                         ),
                         const SizedBox(width: 12),
                         _DrawdownOption(
                           label: 'Partial as needed',
-                          isSelected: false,
+                          isSelected: drawdownPref == 'Partial as needed',
+                          onTap: () => onDrawdownPrefChanged('Partial as needed'),
                         ),
                       ],
                     ),
@@ -384,37 +390,42 @@ class _DropdownField extends StatelessWidget {
 class _DrawdownOption extends StatelessWidget {
   final String label;
   final bool isSelected;
+  final VoidCallback onTap;
 
   const _DrawdownOption({
     required this.label,
     required this.isSelected,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.accentBlue.withValues(alpha: 0.2)
-              : AppColors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
             color: isSelected
-                ? AppColors.accentBlue
-                : AppColors.white.withValues(alpha: 0.1),
-          ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                ? AppColors.accentBlue.withValues(alpha: 0.2)
+                : AppColors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
               color: isSelected
-                  ? AppColors.white
-                  : AppColors.white.withValues(alpha: 0.6),
+                  ? AppColors.accentBlue
+                  : AppColors.white.withValues(alpha: 0.1),
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected
+                    ? AppColors.white
+                    : AppColors.white.withValues(alpha: 0.6),
+              ),
             ),
           ),
         ),

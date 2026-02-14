@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'dart:ui';
 import '../../../theme/app_theme.dart';
+import '../../../models/loan_request.dart';
+import '../request_tracker.dart';
 import 'steps/client_step.dart';
 import 'steps/loan_params_step.dart';
 import 'steps/collateral_step.dart';
@@ -26,7 +28,9 @@ class _RequestWizardState extends State<RequestWizard> {
   double _loanAmount = 500000;
   String _loanCurrency = 'CHF';
   String _loanPurpose = 'Portfolio leverage';
-  String _termType = 'Open-ended';
+  String _termType = 'Open-ended (revolving)';
+  String _drawdownPref = 'Full amount';
+  bool _isEntityApplication = false;
   Set<String> _selectedCollateral = {};
   bool _termsAccepted = false;
 
@@ -52,6 +56,62 @@ class _RequestWizardState extends State<RequestWizard> {
         _currentStep--;
       });
     }
+  }
+
+  void _confirmClose() async {
+    final shouldClose = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A3A5C),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Discard request?',
+          style: TextStyle(color: AppColors.white),
+        ),
+        content: Text(
+          'Your progress will be lost.',
+          style: TextStyle(color: AppColors.white.withValues(alpha: 0.7)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.white.withValues(alpha: 0.6)),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              'Discard',
+              style: TextStyle(color: AppColors.danger),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (shouldClose == true && mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  void _navigateToTracker() {
+    final mockRequest = LoanRequest(
+      id: 'new-001',
+      referenceNumber: 'LMB-2026-00142',
+      amount: _loanAmount,
+      currency: _loanCurrency,
+      purpose: _loanPurpose,
+      submittedDate: DateTime.now(),
+      status: LoanStatus.submitted,
+      ltv: 50.0,
+      collateralValue: _loanAmount * 2,
+    );
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => RequestTracker(request: mockRequest),
+      ),
+    );
   }
 
   @override
@@ -88,7 +148,7 @@ class _RequestWizardState extends State<RequestWizard> {
                       children: [
                         IconButton(
                           icon: Icon(Icons.close, color: AppColors.white),
-                          onPressed: () => Navigator.of(context).pop(),
+                          onPressed: _confirmClose,
                         ),
                         Expanded(
                           child: Text(
@@ -151,17 +211,25 @@ class _RequestWizardState extends State<RequestWizard> {
                       controller: _pageController,
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
-                        ClientStep(onNext: _nextStep),
+                        ClientStep(
+                          isEntity: _isEntityApplication,
+                          onEntityChanged: (v) =>
+                              setState(() => _isEntityApplication = v),
+                          onNext: _nextStep,
+                        ),
                         LoanParamsStep(
                           amount: _loanAmount,
                           currency: _loanCurrency,
                           purpose: _loanPurpose,
                           termType: _termType,
+                          drawdownPref: _drawdownPref,
                           onAmountChanged: (v) => setState(() => _loanAmount = v),
                           onCurrencyChanged: (v) =>
                               setState(() => _loanCurrency = v),
                           onPurposeChanged: (v) => setState(() => _loanPurpose = v),
                           onTermTypeChanged: (v) => setState(() => _termType = v),
+                          onDrawdownPrefChanged: (v) =>
+                              setState(() => _drawdownPref = v),
                           onNext: _nextStep,
                           onBack: _previousStep,
                         ),
@@ -178,6 +246,8 @@ class _RequestWizardState extends State<RequestWizard> {
                           onBack: _previousStep,
                         ),
                         PricingStep(
+                          loanAmount: _loanAmount,
+                          loanCurrency: _loanCurrency,
                           termsAccepted: _termsAccepted,
                           onTermsChanged: (v) =>
                               setState(() => _termsAccepted = v),
@@ -188,8 +258,11 @@ class _RequestWizardState extends State<RequestWizard> {
                           loanAmount: _loanAmount,
                           loanCurrency: _loanCurrency,
                           loanPurpose: _loanPurpose,
+                          termType: _termType,
+                          drawdownPref: _drawdownPref,
                           selectedCollateral: _selectedCollateral,
                           onBack: _previousStep,
+                          onTrackStatus: _navigateToTracker,
                         ),
                       ],
                     ),

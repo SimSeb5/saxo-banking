@@ -4,9 +4,16 @@ import '../../../../theme/app_theme.dart';
 import '../../../../data/mock_data.dart';
 
 class ClientStep extends StatelessWidget {
+  final bool isEntity;
+  final ValueChanged<bool> onEntityChanged;
   final VoidCallback onNext;
 
-  const ClientStep({super.key, required this.onNext});
+  const ClientStep({
+    super.key,
+    required this.isEntity,
+    required this.onEntityChanged,
+    required this.onNext,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -106,8 +113,8 @@ class ClientStep extends StatelessWidget {
                       ),
                     ),
                     Switch(
-                      value: false,
-                      onChanged: (value) {},
+                      value: isEntity,
+                      onChanged: onEntityChanged,
                       activeTrackColor:
                           AppColors.accentBlue.withValues(alpha: 0.5),
                       activeThumbColor: AppColors.accentBlue,

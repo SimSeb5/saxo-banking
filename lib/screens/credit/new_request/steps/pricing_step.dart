@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import '../../../../theme/app_theme.dart';
+import '../../../../utils/formatters.dart';
 
 class PricingStep extends StatelessWidget {
+  final double loanAmount;
+  final String loanCurrency;
   final bool termsAccepted;
   final ValueChanged<bool> onTermsChanged;
   final VoidCallback onNext;
@@ -10,11 +13,23 @@ class PricingStep extends StatelessWidget {
 
   const PricingStep({
     super.key,
+    required this.loanAmount,
+    required this.loanCurrency,
     required this.termsAccepted,
     required this.onTermsChanged,
     required this.onNext,
     required this.onBack,
   });
+
+  double get _spread {
+    if (loanAmount >= 1000000) return 0.75;
+    if (loanAmount >= 500000) return 0.95;
+    return 1.20;
+  }
+
+  double get _allInRate => 0.45 + _spread;
+
+  double get _estimatedMonthlyInterest => loanAmount * (_allInRate / 100) / 12;
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +94,7 @@ class PricingStep extends StatelessWidget {
                     const SizedBox(height: 12),
                     _PricingRow(
                       label: 'Spread',
-                      value: '+ 0.95%',
+                      value: '+ ${_spread.toStringAsFixed(2)}%',
                     ),
                     const SizedBox(height: 12),
                     Divider(color: AppColors.white.withValues(alpha: 0.2)),
@@ -95,10 +110,32 @@ class PricingStep extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '1.40%',
+                          '${_allInRate.toStringAsFixed(2)}%',
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w700,
+                            color: AppColors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Est. Monthly Interest',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.white.withValues(alpha: 0.7),
+                          ),
+                        ),
+                        Text(
+                          Formatters.formatCurrency(
+                              _estimatedMonthlyInterest, loanCurrency),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                             color: AppColors.white,
                           ),
                         ),

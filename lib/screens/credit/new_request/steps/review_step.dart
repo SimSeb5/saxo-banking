@@ -12,16 +12,22 @@ class ReviewStep extends StatefulWidget {
   final double loanAmount;
   final String loanCurrency;
   final String loanPurpose;
+  final String termType;
+  final String drawdownPref;
   final Set<String> selectedCollateral;
   final VoidCallback onBack;
+  final VoidCallback onTrackStatus;
 
   const ReviewStep({
     super.key,
     required this.loanAmount,
     required this.loanCurrency,
     required this.loanPurpose,
+    required this.termType,
+    required this.drawdownPref,
     required this.selectedCollateral,
     required this.onBack,
+    required this.onTrackStatus,
   });
 
   @override
@@ -126,6 +132,22 @@ class _ReviewStepState extends State<ReviewStep> {
                     _SummaryRow(
                       label: 'Purpose',
                       value: widget.loanPurpose,
+                    ),
+                    Divider(
+                      height: 24,
+                      color: AppColors.white.withValues(alpha: 0.1),
+                    ),
+                    _SummaryRow(
+                      label: 'Term Type',
+                      value: widget.termType,
+                    ),
+                    Divider(
+                      height: 24,
+                      color: AppColors.white.withValues(alpha: 0.1),
+                    ),
+                    _SummaryRow(
+                      label: 'Drawdown',
+                      value: widget.drawdownPref,
                     ),
                     Divider(
                       height: 24,
@@ -448,7 +470,7 @@ class _ReviewStepState extends State<ReviewStep> {
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                     child: OutlinedButton(
-                      onPressed: () {},
+                      onPressed: widget.onTrackStatus,
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         side: BorderSide(
