@@ -268,9 +268,9 @@ class AccountsCarousel extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         SizedBox(
-          height: 110,
+          height: 100,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -295,7 +295,7 @@ class AccountsCarousel extends StatelessWidget {
         child: Container(
           width: 180,
           margin: const EdgeInsets.only(right: 12),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: AppColors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),

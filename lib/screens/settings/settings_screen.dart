@@ -19,6 +19,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _securityAlerts = true;
   String _defaultTradingMode = 'SaxoInvestor';
   String _sessionTimeout = '15 minutes';
+  String _defaultOrderType = 'Market';
+  bool _emailAlerts = false;
 
   @override
   Widget build(BuildContext context) {
@@ -264,15 +266,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _SettingsTile(
                       icon: Icons.receipt_outlined,
                       title: 'Default Order Type',
-                      value: 'Market',
+                      value: _defaultOrderType,
                       showArrow: true,
-                      onTap: () {},
+                      onTap: () => _showDefaultOrderTypeSheet(),
                     ),
                     _SettingsTile(
                       icon: Icons.notifications_active_outlined,
                       title: 'Price Alert Settings',
                       showArrow: true,
-                      onTap: () {},
+                      onTap: () => _showPriceAlertSettingsSheet(),
                     ),
                   ],
                 ),
@@ -520,6 +522,270 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _showLegalSheet(String title) {
     _showGenericSheet(title, 'Legal documentation and regulatory information.');
+  }
+
+  void _showDefaultOrderTypeSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFF1A3A5C),
+              const Color(0xFF0A1E3D),
+            ],
+          ),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.white.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Default Order Type',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: AppColors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...['Market', 'Limit', 'Stop'].map((type) => InkWell(
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _defaultOrderType = type);
+                ScaffoldMessenger.of(this.context).showSnackBar(
+                  SnackBar(
+                    content: Text('Default order type set to $type'),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: const Color(0xFF1A3A5C),
+                  ),
+                );
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                margin: const EdgeInsets.only(bottom: 4),
+                decoration: BoxDecoration(
+                  color: _defaultOrderType == type
+                      ? AppColors.accentBlue.withValues(alpha: 0.2)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _defaultOrderType == type
+                        ? AppColors.accentBlue.withValues(alpha: 0.4)
+                        : AppColors.white.withValues(alpha: 0.08),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        type,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                    if (_defaultOrderType == type)
+                      Icon(
+                        Icons.check_circle,
+                        color: AppColors.accentBlue,
+                        size: 22,
+                      ),
+                  ],
+                ),
+              ),
+            )),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPriceAlertSettingsSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (builderContext, setSheetState) => Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color(0xFF1A3A5C),
+                const Color(0xFF0A1E3D),
+              ],
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.white.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Price Alert Settings',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.white,
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Push Notifications toggle
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.notifications_outlined,
+                      size: 22,
+                      color: AppColors.white.withValues(alpha: 0.7),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        'Push Notifications for Alerts',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                    CupertinoSwitch(
+                      value: _priceAlerts,
+                      onChanged: (v) {
+                        setState(() => _priceAlerts = v);
+                        setSheetState(() {});
+                      },
+                      activeTrackColor: AppColors.accentBlue,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                height: 1,
+                margin: const EdgeInsets.only(left: 36),
+                color: AppColors.white.withValues(alpha: 0.08),
+              ),
+              // Email Alerts toggle
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.email_outlined,
+                      size: 22,
+                      color: AppColors.white.withValues(alpha: 0.7),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        'Email Alerts',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                    CupertinoSwitch(
+                      value: _emailAlerts,
+                      onChanged: (v) {
+                        setState(() => _emailAlerts = v);
+                        setSheetState(() {});
+                      },
+                      activeTrackColor: AppColors.accentBlue,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                height: 1,
+                margin: const EdgeInsets.only(left: 36),
+                color: AppColors.white.withValues(alpha: 0.08),
+              ),
+              // Alert Cooldown
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.timer_outlined,
+                      size: 22,
+                      color: AppColors.white.withValues(alpha: 0.7),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        'Alert Cooldown',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '15 minutes',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.white.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Done button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(sheetContext),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accentBlue,
+                    foregroundColor: AppColors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Done'),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _showGenericSheet(String title, String description) {

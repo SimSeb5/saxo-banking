@@ -405,7 +405,7 @@ class BalanceCard extends StatelessWidget {
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
@@ -519,7 +519,7 @@ class BalanceCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         Text(
                           Formatters.formatCurrency(MockData.totalBalance, 'CHF'),
                           style: TextStyle(
@@ -529,7 +529,7 @@ class BalanceCard extends StatelessWidget {
                             letterSpacing: -1,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         // P&L indicator
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -563,27 +563,27 @@ class BalanceCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
                         // Quick action pills with glass effect
                         Row(
                           children: [
-                            _GlassActionPill(
+                            Flexible(child: _GlassActionPill(
                               icon: Icons.add,
                               label: 'Add',
                               onTap: () => _showAddMoneySheet(context),
-                            ),
+                            )),
                             const SizedBox(width: 10),
-                            _GlassActionPill(
+                            Flexible(child: _GlassActionPill(
                               icon: Icons.arrow_upward,
                               label: 'Send',
                               onTap: () => onNavigateToTab?.call(2), // Go to Payments
-                            ),
+                            )),
                             const SizedBox(width: 10),
-                            _GlassActionPill(
+                            Flexible(child: _GlassActionPill(
                               icon: Icons.swap_horiz,
                               label: 'Exchange',
                               onTap: () => onNavigateToTab?.call(1), // Go to Trading
-                            ),
+                            )),
                           ],
                         ),
                       ],

@@ -44,24 +44,24 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   // Header Bar
                   _buildHeaderBar(context),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   // Total Balance Card
                   BalanceCard(onNavigateToTab: onNavigateToTab),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   // Accounts Carousel
                   AccountsCarousel(onNavigateToTab: onNavigateToTab),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   // Portfolio Summary
                   PortfolioSummary(
                     onTap: () => onNavigateToTab?.call(1),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   // Quick Actions
                   QuickActions(onNavigateToTab: onNavigateToTab),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   // Recent Transactions
                   RecentTransactions(onNavigateToTab: onNavigateToTab),
-                  const SizedBox(height: 100),
+                  const SizedBox(height: 60),
                 ],
               ),
             ),

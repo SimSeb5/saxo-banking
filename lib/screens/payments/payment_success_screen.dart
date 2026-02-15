@@ -175,7 +175,30 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                           child: OutlinedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.check_circle,
+                                        color: AppColors.success,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        'Receipt copied to clipboard',
+                                        style: TextStyle(color: AppColors.white),
+                                      ),
+                                    ],
+                                  ),
+                                  backgroundColor: const Color(0xFF1A3A5C),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              );
+                            },
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               side: BorderSide(

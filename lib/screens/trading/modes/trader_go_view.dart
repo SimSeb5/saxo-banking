@@ -7,10 +7,38 @@ import '../widgets/holdings_list.dart';
 import '../widgets/watchlist.dart';
 import '../widgets/market_news.dart';
 
-class TraderGoView extends StatelessWidget {
+class TraderGoView extends StatefulWidget {
   final Function(Holding)? onHoldingTap;
 
   const TraderGoView({super.key, this.onHoldingTap});
+
+  @override
+  State<TraderGoView> createState() => _TraderGoViewState();
+}
+
+class _TraderGoViewState extends State<TraderGoView> {
+  final List<Map<String, dynamic>> _orders = [
+    {
+      'ticker': 'AAPL',
+      'orderType': 'Limit Buy',
+      'quantity': 10,
+      'price': 240.00,
+      'status': 'Pending',
+    },
+    {
+      'ticker': 'NVDA',
+      'orderType': 'Stop Loss',
+      'quantity': 25,
+      'price': 135.00,
+      'status': 'Active',
+    },
+  ];
+
+  void _removeOrder(int index) {
+    setState(() {
+      _orders.removeAt(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +55,7 @@ class TraderGoView extends StatelessWidget {
           _buildOpenOrders(),
           const SizedBox(height: 24),
           // Holdings with more details
-          HoldingsList(showDetails: true, onHoldingTap: onHoldingTap),
+          HoldingsList(showDetails: true, onHoldingTap: widget.onHoldingTap),
           const SizedBox(height: 24),
           // Watchlist Pro with alerts
           const WatchlistWidget(showAlerts: true),
@@ -41,6 +69,7 @@ class TraderGoView extends StatelessWidget {
   }
 
   Widget _buildOpenOrders() {
+    final pendingCount = _orders.length;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -67,7 +96,7 @@ class TraderGoView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  '2 pending',
+                  '$pendingCount pending',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -92,25 +121,22 @@ class TraderGoView extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    _OrderTile(
-                      ticker: 'AAPL',
-                      orderType: 'Limit Buy',
-                      quantity: 10,
-                      price: 240.00,
-                      status: 'Pending',
-                    ),
-                    Container(
-                      height: 1,
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      color: AppColors.white.withValues(alpha: 0.08),
-                    ),
-                    _OrderTile(
-                      ticker: 'NVDA',
-                      orderType: 'Stop Loss',
-                      quantity: 25,
-                      price: 135.00,
-                      status: 'Active',
-                    ),
+                    for (int i = 0; i < _orders.length; i++) ...[
+                      if (i > 0)
+                        Container(
+                          height: 1,
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          color: AppColors.white.withValues(alpha: 0.08),
+                        ),
+                      _OrderTile(
+                        ticker: _orders[i]['ticker'] as String,
+                        orderType: _orders[i]['orderType'] as String,
+                        quantity: _orders[i]['quantity'] as int,
+                        price: _orders[i]['price'] as double,
+                        status: _orders[i]['status'] as String,
+                        onCancelled: () => _removeOrder(i),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -122,12 +148,13 @@ class TraderGoView extends StatelessWidget {
   }
 }
 
-class _OrderTile extends StatelessWidget {
+class _OrderTile extends StatefulWidget {
   final String ticker;
   final String orderType;
   final int quantity;
   final double price;
   final String status;
+  final VoidCallback? onCancelled;
 
   const _OrderTile({
     required this.ticker,
@@ -135,10 +162,54 @@ class _OrderTile extends StatelessWidget {
     required this.quantity,
     required this.price,
     required this.status,
+    this.onCancelled,
   });
 
   @override
+  State<_OrderTile> createState() => _OrderTileState();
+}
+
+class _OrderTileState extends State<_OrderTile> {
+  bool _cancelled = false;
+
+  Future<void> _handleCancel() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancel Order'),
+        content: Text(
+          'Are you sure you want to cancel the ${widget.orderType} order for ${widget.ticker}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() {
+        _cancelled = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Order cancelled')),
+      );
+      widget.onCancelled?.call();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_cancelled) {
+      return const SizedBox.shrink();
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
@@ -152,7 +223,7 @@ class _OrderTile extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                ticker,
+                widget.ticker,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -167,7 +238,7 @@ class _OrderTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  orderType,
+                  widget.orderType,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
@@ -176,7 +247,7 @@ class _OrderTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '$quantity shares @ \$$price',
+                  '${widget.quantity} shares @ \$${widget.price}',
                   style: TextStyle(
                     fontSize: 13,
                     color: AppColors.white.withValues(alpha: 0.5),
@@ -194,17 +265,17 @@ class _OrderTile extends StatelessWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: status == 'Active'
+                  color: widget.status == 'Active'
                       ? AppColors.success.withValues(alpha: 0.2)
                       : AppColors.warning.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  status,
+                  widget.status,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: status == 'Active'
+                    color: widget.status == 'Active'
                         ? AppColors.success
                         : AppColors.warning,
                   ),
@@ -212,7 +283,7 @@ class _OrderTile extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               GestureDetector(
-                onTap: () {},
+                onTap: _handleCancel,
                 child: Text(
                   'Cancel',
                   style: TextStyle(

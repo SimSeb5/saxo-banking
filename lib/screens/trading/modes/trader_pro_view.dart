@@ -8,10 +8,141 @@ import '../widgets/order_book.dart';
 import '../widgets/margin_monitor.dart';
 import '../widgets/market_news.dart';
 
-class TraderProView extends StatelessWidget {
+class TraderProView extends StatefulWidget {
   final Function(Holding)? onHoldingTap;
 
   const TraderProView({super.key, this.onHoldingTap});
+
+  @override
+  State<TraderProView> createState() => _TraderProViewState();
+}
+
+class _TraderProViewState extends State<TraderProView> {
+  bool _oneClickEnabled = false;
+
+  void _showOrderConfirmationSheet({
+    required String side,
+    required String price,
+    required Color color,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF1A3A5C),
+                Color(0xFF0A1E3D),
+              ],
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              // Drag handle
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.white.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Order Confirmation',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.white,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    _buildSheetRow('Instrument', 'AAPL'),
+                    const SizedBox(height: 12),
+                    _buildSheetRow('Quantity', '100 shares'),
+                    const SizedBox(height: 12),
+                    _buildSheetRow('Price', price),
+                    const SizedBox(height: 12),
+                    _buildSheetRow('Side', side.toUpperCase()),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(this.context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '${side.substring(0, 1).toUpperCase()}${side.substring(1).toLowerCase()} order placed for 100 AAPL shares',
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: color,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Confirm ${side.substring(0, 1).toUpperCase()}${side.substring(1).toLowerCase()}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSheetRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: AppColors.white.withValues(alpha: 0.6),
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.white,
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +171,7 @@ class TraderProView extends StatelessWidget {
           _buildPositionAnalytics(),
           const SizedBox(height: 24),
           // Holdings
-          HoldingsList(showDetails: true, onHoldingTap: onHoldingTap),
+          HoldingsList(showDetails: true, onHoldingTap: widget.onHoldingTap),
           const SizedBox(height: 24),
           // Market News
           const MarketNews(),
@@ -90,8 +221,19 @@ class TraderProView extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Switch(
-                          value: false,
-                          onChanged: (value) {},
+                          value: _oneClickEnabled,
+                          onChanged: (value) {
+                            setState(() {
+                              _oneClickEnabled = value;
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'One-Click Trading ${value ? 'enabled' : 'disabled'}',
+                                ),
+                              ),
+                            );
+                          },
                           activeTrackColor: AppColors.accentBlue.withValues(alpha: 0.5),
                           activeThumbColor: AppColors.accentBlue,
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -108,7 +250,13 @@ class TraderProView extends StatelessWidget {
                         label: 'BUY',
                         price: '\$245.30',
                         color: AppColors.success,
-                        onTap: () {},
+                        onTap: () {
+                          _showOrderConfirmationSheet(
+                            side: 'Buy',
+                            price: '\$245.30',
+                            color: AppColors.success,
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -117,7 +265,13 @@ class TraderProView extends StatelessWidget {
                         label: 'SELL',
                         price: '\$245.28',
                         color: AppColors.danger,
-                        onTap: () {},
+                        onTap: () {
+                          _showOrderConfirmationSheet(
+                            side: 'Sell',
+                            price: '\$245.28',
+                            color: AppColors.danger,
+                          );
+                        },
                       ),
                     ),
                   ],

@@ -708,7 +708,7 @@ class _QuickActionButton extends StatelessWidget {
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
                 color: AppColors.white.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(16),
@@ -720,8 +720,8 @@ class _QuickActionButton extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 44,
-                    height: 44,
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
                       color: AppColors.accentBlue.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
@@ -732,7 +732,7 @@ class _QuickActionButton extends StatelessWidget {
                       color: AppColors.accentBlue,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 6),
                   Text(
                     label,
                     style: TextStyle(

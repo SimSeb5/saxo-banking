@@ -22,7 +22,7 @@ class PortfolioSummary extends StatelessWidget {
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.white.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(20),
@@ -75,7 +75,7 @@ class PortfolioSummary extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   Text(
                     Formatters.formatCurrency(MockData.portfolioValue, 'CHF'),
                     style: TextStyle(
@@ -122,7 +122,7 @@ class PortfolioSummary extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   // Mini sparkline chart
                   SizedBox(
                     height: 80,
@@ -162,7 +162,7 @@ class PortfolioSummary extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   // Period returns
                   Row(
                     children: [

@@ -350,7 +350,10 @@ class CreditScreen extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _showDrawFundsSheet(context);
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accentBlue,
                         foregroundColor: AppColors.white,
@@ -366,6 +369,222 @@ class CreditScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showDrawFundsSheet(BuildContext context) {
+    final amountController = TextEditingController();
+    String selectedAccount = 'CHF Main Account';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (builderContext, setSheetState) => Container(
+          height: MediaQuery.of(builderContext).size.height * 0.75,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF1A3A5C),
+                Color(0xFF0A1E3D),
+              ],
+            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.white.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Draw Funds',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.white,
+                ),
+              ),
+              const SizedBox(height: 48),
+              // Amount input - centered, large text
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: TextField(
+                  controller: amountController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.white,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: '0.00',
+                    hintStyle: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.white.withValues(alpha: 0.3),
+                    ),
+                    prefixText: 'CHF ',
+                    prefixStyle: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.white.withValues(alpha: 0.5),
+                    ),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              // Account selector chips
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Destination Account',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.white.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setSheetState(() {
+                                selectedAccount = 'CHF Main Account';
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              decoration: BoxDecoration(
+                                color: selectedAccount == 'CHF Main Account'
+                                    ? AppColors.accentBlue.withValues(alpha: 0.3)
+                                    : AppColors.white.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: selectedAccount == 'CHF Main Account'
+                                      ? AppColors.accentBlue
+                                      : AppColors.white.withValues(alpha: 0.1),
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'CHF Main Account',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: selectedAccount == 'CHF Main Account'
+                                        ? AppColors.accentBlue
+                                        : AppColors.white.withValues(alpha: 0.6),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setSheetState(() {
+                                selectedAccount = 'USD Trading Account';
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              decoration: BoxDecoration(
+                                color: selectedAccount == 'USD Trading Account'
+                                    ? AppColors.accentBlue.withValues(alpha: 0.3)
+                                    : AppColors.white.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: selectedAccount == 'USD Trading Account'
+                                      ? AppColors.accentBlue
+                                      : AppColors.white.withValues(alpha: 0.1),
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'USD Trading Account',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: selectedAccount == 'USD Trading Account'
+                                        ? AppColors.accentBlue
+                                        : AppColors.white.withValues(alpha: 0.6),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              // Confirm Draw button
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final amount = amountController.text.isNotEmpty
+                          ? amountController.text
+                          : '0.00';
+                      Navigator.pop(builderContext);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'CHF $amount drawn successfully',
+                            style: TextStyle(color: AppColors.white),
+                          ),
+                          backgroundColor: const Color(0xFF1A3A5C),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accentBlue,
+                      foregroundColor: AppColors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Confirm Draw',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
