@@ -19,30 +19,30 @@ class MockData {
     bookingCenter: 'Geneva',
   );
 
-  // Accounts
-  static const accounts = [
-    Account(
+  // Accounts (mutable so new accounts can be added)
+  static final List<Account> accounts = [
+    const Account(
       id: 'ACC001',
-      name: 'CHF Main Account',
+      name: 'CHF Account',
       currency: 'CHF',
       balance: 1250000.00,
       flagEmoji: '🇨🇭',
     ),
-    Account(
+    const Account(
       id: 'ACC002',
-      name: 'USD Trading Account',
+      name: 'USD Account',
       currency: 'USD',
       balance: 892000.00,
       flagEmoji: '🇺🇸',
     ),
-    Account(
+    const Account(
       id: 'ACC003',
       name: 'EUR Account',
       currency: 'EUR',
       balance: 315000.00,
       flagEmoji: '🇪🇺',
     ),
-    Account(
+    const Account(
       id: 'ACC004',
       name: 'GBP Account',
       currency: 'GBP',
@@ -51,10 +51,35 @@ class MockData {
     ),
   ];
 
-  // Total balance in CHF
-  static const double totalBalance = 2847350.00;
+  // Total balance in CHF (computed from accounts + portfolio + loans)
+  static double get totalBalance =>
+      cashBalance + portfolioValue + activeLoan.drawnAmount;
+
+  // Cash = sum of all account balances
+  static double get cashBalance =>
+      accounts.fold(0.0, (sum, a) => sum + a.balance);
+
   static const double dailyChange = 12450.00;
   static const double dailyChangePercent = 0.44;
+
+  // Flag emoji for a currency code
+  static String? flagForCurrency(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'CHF': return '🇨🇭';
+      case 'USD': return '🇺🇸';
+      case 'EUR': return '🇪🇺';
+      case 'GBP': return '🇬🇧';
+      case 'JPY': return '🇯🇵';
+      case 'CAD': return '🇨🇦';
+      case 'AUD': return '🇦🇺';
+      case 'SEK': return '🇸🇪';
+      case 'NOK': return '🇳🇴';
+      case 'DKK': return '🇩🇰';
+      case 'SGD': return '🇸🇬';
+      case 'HKD': return '🇭🇰';
+      default: return null;
+    }
+  }
 
   // Portfolio summary
   static const double portfolioValue = 1890000.00;
@@ -224,6 +249,76 @@ class MockData {
       type: TransactionType.debit,
       category: TransactionCategory.food,
     ),
+    Transaction(
+      id: 'TXN006',
+      title: 'Salary Credit',
+      subtitle: 'Monthly salary',
+      amount: 18500.00,
+      currency: 'CHF',
+      date: DateTime.now().subtract(const Duration(days: 4)),
+      type: TransactionType.credit,
+      category: TransactionCategory.salary,
+    ),
+    Transaction(
+      id: 'TXN007',
+      title: 'Trade - AAPL',
+      subtitle: 'Sold 15 shares',
+      amount: 4125.00,
+      currency: 'USD',
+      date: DateTime.now().subtract(const Duration(days: 4)),
+      type: TransactionType.credit,
+      category: TransactionCategory.trade,
+    ),
+    Transaction(
+      id: 'TXN008',
+      title: 'Zurich Insurance',
+      subtitle: 'Premium payment',
+      amount: -750.00,
+      currency: 'CHF',
+      date: DateTime.now().subtract(const Duration(days: 5)),
+      type: TransactionType.debit,
+      category: TransactionCategory.subscription,
+    ),
+    Transaction(
+      id: 'TXN009',
+      title: 'Amazon',
+      subtitle: 'Online shopping',
+      amount: -219.90,
+      currency: 'USD',
+      date: DateTime.now().subtract(const Duration(days: 5)),
+      type: TransactionType.debit,
+      category: TransactionCategory.shopping,
+    ),
+    Transaction(
+      id: 'TXN010',
+      title: 'Swisscom',
+      subtitle: 'Mobile subscription',
+      amount: -89.00,
+      currency: 'CHF',
+      date: DateTime.now().subtract(const Duration(days: 6)),
+      type: TransactionType.debit,
+      category: TransactionCategory.subscription,
+    ),
+    Transaction(
+      id: 'TXN011',
+      title: 'Interest Credit',
+      subtitle: 'Savings interest',
+      amount: 1250.00,
+      currency: 'CHF',
+      date: DateTime.now().subtract(const Duration(days: 7)),
+      type: TransactionType.credit,
+      category: TransactionCategory.dividend,
+    ),
+    Transaction(
+      id: 'TXN012',
+      title: 'Uber',
+      subtitle: 'Transportation',
+      amount: -42.50,
+      currency: 'CHF',
+      date: DateTime.now().subtract(const Duration(days: 7)),
+      type: TransactionType.debit,
+      category: TransactionCategory.travel,
+    ),
   ];
 
   // Recent Contacts
@@ -317,4 +412,94 @@ class MockData {
     'Cash': 5.0,
     'Precious Metals': 30.0,
   };
+
+  // Mock FX rates (all relative to CHF)
+  static const _fxRates = <String, double>{
+    'CHF': 1.0,
+    'USD': 1.12,
+    'EUR': 0.93,
+    'GBP': 0.79,
+    'JPY': 168.50,
+    'CAD': 1.52,
+    'AUD': 1.72,
+    'SGD': 1.50,
+  };
+
+  static double getFxRate(String from, String to) {
+    if (from == to) return 1.0;
+    final fromRate = _fxRates[from] ?? 1.0;
+    final toRate = _fxRates[to] ?? 1.0;
+    return toRate / fromRate;
+  }
+
+  // Per-account investment allocations
+  static const _accountInvestments = <String, double>{
+    'ACC001': 1050000.0, // CHF: equities + bonds
+    'ACC002': 840000.0,  // USD: equities + ETFs
+    // EUR: no investments
+    // GBP: no investments
+  };
+
+  // Per-account loan allocations
+  static const _accountLoans = <String, double>{
+    'ACC001': 300000.0, // CHF: lombard facility
+    // USD: no loans
+    // EUR: no loans
+    // GBP: no loans
+  };
+
+  // IDs of pre-existing accounts (for transaction matching)
+  static const _originalAccountIds = {'ACC001', 'ACC002', 'ACC003', 'ACC004'};
+
+  static double investedForAccountIndex(int index) {
+    if (index == 0) return portfolioValue;
+    final accountId = accounts[index - 1].id;
+    return _accountInvestments[accountId] ?? 0.0;
+  }
+
+  static double loansForAccountIndex(int index) {
+    if (index == 0) return activeLoan.drawnAmount;
+    final accountId = accounts[index - 1].id;
+    return _accountLoans[accountId] ?? 0.0;
+  }
+
+  static double cashForAccountIndex(int index) {
+    if (index == 0) return cashBalance;
+    return accounts[index - 1].balance;
+  }
+
+  // --- Account switcher helpers ---
+  // index 0 = "All Accounts", index 1+ = individual accounts
+
+  static double balanceForIndex(int index) {
+    if (index == 0) return totalBalance;
+    return accounts[index - 1].balance +
+        investedForAccountIndex(index) +
+        loansForAccountIndex(index);
+  }
+
+  static String currencyForIndex(int index) {
+    if (index == 0) return 'CHF';
+    return accounts[index - 1].currency;
+  }
+
+  static String nameForIndex(int index) {
+    if (index == 0) return 'All Accounts';
+    return accounts[index - 1].name;
+  }
+
+  static List<Transaction> transactionsForIndex(int index) {
+    if (index == 0) {
+      // On "All" view, hide the credit side of internal transfers to avoid duplicates
+      return recentTransactions
+          .where((t) => !t.id.endsWith('_credit'))
+          .toList();
+    }
+    final account = accounts[index - 1];
+    // New accounts have no transaction history
+    if (!_originalAccountIds.contains(account.id)) return [];
+    return recentTransactions
+        .where((t) => t.currency == account.currency)
+        .toList();
+  }
 }

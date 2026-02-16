@@ -255,6 +255,7 @@ class _TradingScreenState extends State<TradingScreen> {
           ),
         ),
         child: SafeArea(
+          bottom: false,
           child: RefreshIndicator(
             onRefresh: () async {
               await Future.delayed(const Duration(seconds: 1));

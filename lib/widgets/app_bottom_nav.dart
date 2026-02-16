@@ -43,7 +43,10 @@ class _AppBottomNavState extends State<AppBottomNav> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: IndexedStack(
         index: _currentIndex,
         children: [
@@ -55,64 +58,67 @@ class _AppBottomNavState extends State<AppBottomNav> {
         ],
       ),
       extendBody: true,
-      bottomNavigationBar: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF0A1E3D).withValues(alpha: 0.9),
-              border: Border(
-                top: BorderSide(
-                  color: AppColors.white.withValues(alpha: 0.1),
-                  width: 0.5,
-                ),
-              ),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(
+          left: 12,
+          right: 12,
+          bottom: bottomPadding > 0 ? bottomPadding : 8,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              height: 64,
+              decoration: BoxDecoration(
+                color: const Color(0xFF0A1E3D).withValues(alpha: 0.45),
+                borderRadius: BorderRadius.circular(28),
+            border: Border.all(
+              color: AppColors.white.withValues(alpha: 0.08),
+              width: 0.5,
             ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _NavItem(
-                      icon: CupertinoIcons.house,
-                      activeIcon: CupertinoIcons.house_fill,
-                      label: 'Home',
-                      isSelected: _currentIndex == 0,
-                      onTap: () => switchTab(0),
-                    ),
-                    _NavItem(
-                      icon: CupertinoIcons.chart_bar,
-                      activeIcon: CupertinoIcons.chart_bar_fill,
-                      label: 'Trading',
-                      isSelected: _currentIndex == 1,
-                      onTap: () => switchTab(1),
-                    ),
-                    _NavItem(
-                      icon: CupertinoIcons.creditcard,
-                      activeIcon: CupertinoIcons.creditcard_fill,
-                      label: 'Payments',
-                      isSelected: _currentIndex == 2,
-                      onTap: () => switchTab(2),
-                    ),
-                    _NavItem(
-                      icon: CupertinoIcons.building_2_fill,
-                      activeIcon: CupertinoIcons.building_2_fill,
-                      label: 'Credit',
-                      isSelected: _currentIndex == 3,
-                      onTap: () => switchTab(3),
-                    ),
-                    _NavItem(
-                      icon: CupertinoIcons.settings,
-                      activeIcon: CupertinoIcons.settings_solid,
-                      label: 'Settings',
-                      isSelected: _currentIndex == 4,
-                      onTap: () => switchTab(4),
-                    ),
-                  ],
-                ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _NavItem(
+                icon: CupertinoIcons.house,
+                activeIcon: CupertinoIcons.house_fill,
+                label: 'Home',
+                isSelected: _currentIndex == 0,
+                onTap: () => switchTab(0),
               ),
-            ),
+              _NavItem(
+                icon: CupertinoIcons.chart_bar,
+                activeIcon: CupertinoIcons.chart_bar_fill,
+                label: 'Trading',
+                isSelected: _currentIndex == 1,
+                onTap: () => switchTab(1),
+              ),
+              _NavItem(
+                icon: CupertinoIcons.creditcard,
+                activeIcon: CupertinoIcons.creditcard_fill,
+                label: 'Payments',
+                isSelected: _currentIndex == 2,
+                onTap: () => switchTab(2),
+              ),
+              _NavItem(
+                icon: CupertinoIcons.building_2_fill,
+                activeIcon: CupertinoIcons.building_2_fill,
+                label: 'Credit',
+                isSelected: _currentIndex == 3,
+                onTap: () => switchTab(3),
+              ),
+              _NavItem(
+                icon: CupertinoIcons.settings,
+                activeIcon: CupertinoIcons.settings_solid,
+                label: 'Settings',
+                isSelected: _currentIndex == 4,
+                onTap: () => switchTab(4),
+              ),
+            ],
+          ),
+        ),
           ),
         ),
       ),
@@ -142,32 +148,41 @@ class _NavItem extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.accentBlue.withValues(alpha: 0.2)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 14 : 12,
+          vertical: 6,
         ),
+        decoration: const BoxDecoration(),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              isSelected ? activeIcon : icon,
-              size: 24,
-              color: isSelected
-                  ? AppColors.accentBlue
-                  : AppColors.white.withValues(alpha: 0.5),
+            Container(
+              width: isSelected ? 30 : 24,
+              height: isSelected ? 30 : 24,
+              decoration: isSelected
+                  ? BoxDecoration(
+                      color: AppColors.accentBlue,
+                      shape: BoxShape.circle,
+                    )
+                  : null,
+              child: Icon(
+                isSelected ? activeIcon : icon,
+                size: isSelected ? 16 : 22,
+                color: isSelected
+                    ? AppColors.white
+                    : AppColors.white.withValues(alpha: 0.45),
+              ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
                 fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 color: isSelected
                     ? AppColors.accentBlue
-                    : AppColors.white.withValues(alpha: 0.5),
+                    : AppColors.white.withValues(alpha: 0.45),
               ),
             ),
           ],

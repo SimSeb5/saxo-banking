@@ -6,11 +6,20 @@ import '../../../models/transaction.dart';
 import '../../../utils/formatters.dart';
 
 class RecentTransactions extends StatelessWidget {
+  final int selectedAccountIndex;
   final Function(int)? onNavigateToTab;
 
-  const RecentTransactions({super.key, this.onNavigateToTab});
+  const RecentTransactions({
+    super.key,
+    required this.selectedAccountIndex,
+    this.onNavigateToTab,
+  });
+
+  List<Transaction> get _transactions =>
+      MockData.transactionsForIndex(selectedAccountIndex);
 
   void _showAllTransactions(BuildContext context) {
+    final transactions = _transactions;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -64,17 +73,30 @@ class RecentTransactions extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: MockData.recentTransactions.length + 5,
-                itemBuilder: (context, index) {
-                  final actualIndex = index % MockData.recentTransactions.length;
-                  return _TransactionDetailTile(
-                    transaction: MockData.recentTransactions[actualIndex],
-                    onTap: () => _showTransactionDetail(context, MockData.recentTransactions[actualIndex]),
-                  );
-                },
-              ),
+              child: transactions.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No transactions',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: AppColors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: transactions.length + 5,
+                      itemBuilder: (context, index) {
+                        final actualIndex = index % transactions.length;
+                        return _TransactionDetailTile(
+                          transaction: transactions[actualIndex],
+                          onTap: () => _showTransactionDetail(
+                            context,
+                            transactions[actualIndex],
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -117,7 +139,8 @@ class RecentTransactions extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: (isCredit ? AppColors.success : AppColors.accentBlue).withValues(alpha: 0.2),
+                color: (isCredit ? AppColors.success : AppColors.accentBlue)
+                    .withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -160,11 +183,21 @@ class RecentTransactions extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _DetailRow(label: 'Date', value: Formatters.formatDate(transaction.date)),
+                  _DetailRow(
+                    label: 'Date',
+                    value: Formatters.formatDate(transaction.date),
+                  ),
                   const SizedBox(height: 12),
-                  _DetailRow(label: 'Category', value: transaction.category.name.toUpperCase()),
+                  _DetailRow(
+                    label: 'Category',
+                    value: transaction.category.name.toUpperCase(),
+                  ),
                   const SizedBox(height: 12),
-                  _DetailRow(label: 'Reference', value: 'TXN-${transaction.hashCode.abs().toString().substring(0, 8)}'),
+                  _DetailRow(
+                    label: 'Reference',
+                    value:
+                        'TXN-${transaction.hashCode.abs().toString().substring(0, 8)}',
+                  ),
                 ],
               ),
             ),
@@ -176,7 +209,9 @@ class RecentTransactions extends StatelessWidget {
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.white,
-                      side: BorderSide(color: AppColors.white.withValues(alpha: 0.3)),
+                      side: BorderSide(
+                        color: AppColors.white.withValues(alpha: 0.3),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -211,6 +246,8 @@ class RecentTransactions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final transactions = _transactions;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -227,52 +264,109 @@ class RecentTransactions extends StatelessWidget {
                   color: AppColors.white,
                 ),
               ),
-              GestureDetector(
-                onTap: () => _showAllTransactions(context),
-                child: Text(
-                  'See all',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.accentBlue,
+              if (transactions.length > 5)
+                GestureDetector(
+                  onTap: () => _showAllTransactions(context),
+                  child: Text(
+                    'See all',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.accentBlue,
+                    ),
                   ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (transactions.isEmpty)
+            _EmptyState()
+          else
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.white.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.zero,
+                    itemCount: transactions.length > 5 ? 5 : transactions.length,
+                    separatorBuilder: (context, index) => Divider(
+                      height: 1,
+                      color: AppColors.white.withValues(alpha: 0.08),
+                      indent: 72,
+                    ),
+                    itemBuilder: (context, index) {
+                      return _TransactionTile(
+                        transaction: transactions[index],
+                        onTap: () => _showTransactionDetail(
+                          context,
+                          transactions[index],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+          decoration: BoxDecoration(
+            color: AppColors.white.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.white.withValues(alpha: 0.08),
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                size: 40,
+                color: AppColors.white.withValues(alpha: 0.25),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'No recent transactions',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.white.withValues(alpha: 0.5),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Transactions will appear here',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.white.withValues(alpha: 0.3),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: AppColors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: MockData.recentTransactions.length,
-                  separatorBuilder: (context, index) => Divider(
-                    height: 1,
-                    color: AppColors.white.withValues(alpha: 0.08),
-                    indent: 72,
-                  ),
-                  itemBuilder: (context, index) {
-                    return _TransactionTile(
-                      transaction: MockData.recentTransactions[index],
-                      onTap: () => _showTransactionDetail(context, MockData.recentTransactions[index]),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -356,6 +450,10 @@ class _TransactionTile extends StatelessWidget {
     final isCredit = transaction.type == TransactionType.credit;
     final amountColor = isCredit ? AppColors.success : AppColors.white;
     final amountPrefix = isCredit ? '+' : '';
+    final formatted = '$amountPrefix${Formatters.formatCurrency(transaction.amount.abs(), transaction.currency)}';
+    final dotIdx = formatted.lastIndexOf('.');
+    final wholePart = dotIdx >= 0 ? formatted.substring(0, dotIdx) : formatted;
+    final decimalPart = dotIdx >= 0 ? formatted.substring(dotIdx) : '';
 
     return GestureDetector(
       onTap: onTap,
@@ -403,12 +501,26 @@ class _TransactionTile extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  '$amountPrefix${Formatters.formatCurrency(transaction.amount.abs(), transaction.currency)}',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: amountColor,
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: wholePart,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: amountColor,
+                        ),
+                      ),
+                      TextSpan(
+                        text: decimalPart,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: amountColor.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -432,13 +544,18 @@ class _TransactionDetailTile extends StatelessWidget {
   final Transaction transaction;
   final VoidCallback onTap;
 
-  const _TransactionDetailTile({required this.transaction, required this.onTap});
+  const _TransactionDetailTile(
+      {required this.transaction, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final isCredit = transaction.type == TransactionType.credit;
     final amountColor = isCredit ? AppColors.success : AppColors.white;
     final amountPrefix = isCredit ? '+' : '';
+    final formatted = '$amountPrefix${Formatters.formatCurrency(transaction.amount.abs(), transaction.currency)}';
+    final dotIdx = formatted.lastIndexOf('.');
+    final wholePart = dotIdx >= 0 ? formatted.substring(0, dotIdx) : formatted;
+    final decimalPart = dotIdx >= 0 ? formatted.substring(dotIdx) : '';
 
     return GestureDetector(
       onTap: onTap,
@@ -458,7 +575,8 @@ class _TransactionDetailTile extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: (isCredit ? AppColors.success : AppColors.accentBlue).withValues(alpha: 0.2),
+                color: (isCredit ? AppColors.success : AppColors.accentBlue)
+                    .withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -491,12 +609,26 @@ class _TransactionDetailTile extends StatelessWidget {
                 ],
               ),
             ),
-            Text(
-              '$amountPrefix${Formatters.formatCurrency(transaction.amount.abs(), transaction.currency)}',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: amountColor,
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: wholePart,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: amountColor,
+                    ),
+                  ),
+                  TextSpan(
+                    text: decimalPart,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: amountColor.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

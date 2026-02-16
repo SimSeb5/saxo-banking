@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import '../../../theme/app_theme.dart';
+import 'spending_stats.dart';
 
 class QuickActions extends StatelessWidget {
   final Function(int)? onNavigateToTab;
+  final int selectedAccountIndex;
 
-  const QuickActions({super.key, this.onNavigateToTab});
+  const QuickActions({super.key, this.onNavigateToTab, this.selectedAccountIndex = 0});
 
   void _showCardsSheet(BuildContext context) {
     showModalBottomSheet(
@@ -364,7 +366,6 @@ class QuickActions extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            // Summary cards
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
@@ -520,109 +521,6 @@ class QuickActions extends StatelessWidget {
     );
   }
 
-  void _showAlertsSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFF1A3A5C),
-              const Color(0xFF0A1E3D),
-            ],
-          ),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Price Alerts',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.white,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: [
-                  _AlertItem(
-                    symbol: 'AAPL',
-                    condition: 'Above \$250',
-                    isActive: true,
-                  ),
-                  _AlertItem(
-                    symbol: 'NVDA',
-                    condition: 'Below \$800',
-                    isActive: true,
-                  ),
-                  _AlertItem(
-                    symbol: 'BTC/USD',
-                    condition: 'Above \$100,000',
-                    isActive: false,
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _showCreateAlert(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accentBlue,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Create New Alert'),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showCreateAlert(BuildContext context) {
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.notifications_active, color: AppColors.accentBlue),
-            const SizedBox(width: 12),
-            const Text('Alert creation coming soon'),
-          ],
-        ),
-        backgroundColor: const Color(0xFF1A3A5C),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -638,9 +536,8 @@ class QuickActions extends StatelessWidget {
               color: AppColors.white,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _QuickActionButton(
                 icon: Icons.credit_card_outlined,
@@ -648,21 +545,15 @@ class QuickActions extends StatelessWidget {
                 onTap: () => _showCardsSheet(context),
               ),
               _QuickActionButton(
-                icon: Icons.swap_horiz,
-                label: 'Exchange',
-                onTap: () => onNavigateToTab?.call(1),
-              ),
-              _QuickActionButton(
                 icon: Icons.pie_chart_outline,
                 label: 'Analytics',
-                onTap: () => _showAnalyticsSheet(context),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    fullscreenDialog: true,
+                    builder: (_) => AnalyticsPage(selectedAccountIndex: selectedAccountIndex),
+                  ),
+                ),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
               _QuickActionButton(
                 icon: Icons.account_balance_outlined,
                 label: 'Lombard',
@@ -672,11 +563,6 @@ class QuickActions extends StatelessWidget {
                 icon: Icons.description_outlined,
                 label: 'Statements',
                 onTap: () => _showStatementsSheet(context),
-              ),
-              _QuickActionButton(
-                icon: Icons.notifications_outlined,
-                label: 'Alerts',
-                onTap: () => _showAlertsSheet(context),
               ),
             ],
           ),
@@ -837,7 +723,7 @@ class _SettingsToggleState extends State<_SettingsToggle> {
           Switch(
             value: _isEnabled,
             onChanged: (value) => setState(() => _isEnabled = value),
-            activeColor: AppColors.accentBlue,
+            activeThumbColor: AppColors.accentBlue,
             activeTrackColor: AppColors.accentBlue.withValues(alpha: 0.3),
             inactiveThumbColor: AppColors.white.withValues(alpha: 0.5),
             inactiveTrackColor: AppColors.white.withValues(alpha: 0.1),
@@ -1051,94 +937,6 @@ class _StatementItem extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _AlertItem extends StatefulWidget {
-  final String symbol;
-  final String condition;
-  final bool isActive;
-
-  const _AlertItem({
-    required this.symbol,
-    required this.condition,
-    required this.isActive,
-  });
-
-  @override
-  State<_AlertItem> createState() => _AlertItemState();
-}
-
-class _AlertItemState extends State<_AlertItem> {
-  late bool _isActive;
-
-  @override
-  void initState() {
-    super.initState();
-    _isActive = widget.isActive;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.white.withValues(alpha: 0.08),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: _isActive
-                  ? AppColors.success.withValues(alpha: 0.2)
-                  : AppColors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.notifications_active,
-              color: _isActive ? AppColors.success : AppColors.white.withValues(alpha: 0.5),
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.symbol,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.white,
-                  ),
-                ),
-                Text(
-                  widget.condition,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.white.withValues(alpha: 0.5),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Switch(
-            value: _isActive,
-            onChanged: (value) => setState(() => _isActive = value),
-            activeColor: AppColors.success,
-            activeTrackColor: AppColors.success.withValues(alpha: 0.3),
-          ),
-        ],
       ),
     );
   }

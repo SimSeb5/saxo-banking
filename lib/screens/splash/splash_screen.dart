@@ -75,15 +75,15 @@ class _SplashScreenState extends State<SplashScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFF0A1E3D), // Navy
-                  Color(0xFF071428), // Darker navy
-                  Color(0xFF0D2847), // Slight blue tint
+                  Color(0xFF0A1E3D),
+                  Color(0xFF071428),
+                  Color(0xFF0D2847),
                 ],
                 stops: [0.0, 0.6, 1.0],
               ),
             ),
           ),
-          // Decorative transparent blue circles (Revolut style)
+          // Decorative transparent blue circles
           Positioned(
             top: -100,
             right: -100,
@@ -127,12 +127,12 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // JSS Shield Logo
+                    // App icon matching the home screen icon
                     Container(
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
-                        color: AppColors.white.withValues(alpha: 0.1),
+                        color: const Color(0xFF0A1E3D),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                           color: AppColors.white.withValues(alpha: 0.2),
@@ -150,17 +150,23 @@ class _SplashScreenState extends State<SplashScreen>
                                 Text(
                                   'SAXO',
                                   style: TextStyle(
-                                    fontSize: 24,
+                                    fontSize: 22,
                                     fontWeight: FontWeight.w800,
                                     color: AppColors.white,
-                                    letterSpacing: 2,
+                                    letterSpacing: 1.5,
+                                    fontFamily: 'Helvetica Neue',
                                   ),
                                 ),
-                                Container(
-                                  width: 40,
-                                  height: 2,
-                                  margin: const EdgeInsets.only(top: 4),
-                                  color: AppColors.accentGold,
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Banking',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.accentGold,
+                                    letterSpacing: 1.5,
+                                    fontFamily: 'Helvetica Neue',
+                                  ),
                                 ),
                               ],
                             ),
@@ -169,24 +175,26 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ),
                     const SizedBox(height: 32),
-                    // SAXO Wordmark
+                    // SAXO Wordmark - condensed bold to match icon
                     Text(
                       'SAXO',
                       style: TextStyle(
                         fontSize: 48,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w800,
                         color: AppColors.white,
-                        letterSpacing: 12,
+                        letterSpacing: 8,
+                        fontFamily: 'Helvetica Neue',
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     Text(
-                      'B A N K I N G',
+                      'Banking',
                       style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.white.withValues(alpha: 0.6),
-                        letterSpacing: 8,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.accentGold,
+                        letterSpacing: 4,
+                        fontFamily: 'Helvetica Neue',
                       ),
                     ),
                     const SizedBox(height: 48),

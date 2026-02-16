@@ -64,6 +64,25 @@ class Formatters {
     return '$sign${formatter.format(amount)}';
   }
 
+  static String formatCurrencyRounded(double amount, String currency) {
+    final symbol = _getCurrencySymbol(currency);
+    if (amount.abs() >= 1000000) {
+      return '$symbol${(amount / 1000000).toStringAsFixed(1)}M';
+    } else if (amount.abs() >= 1000) {
+      return '$symbol${NumberFormat('#,##0').format(amount.round())}';
+    }
+    return '$symbol${amount.round()}';
+  }
+
+  static String formatNumberCompact(double amount) {
+    if (amount.abs() >= 1000000) {
+      return '${(amount / 1000000).toStringAsFixed(1)}M';
+    } else if (amount.abs() >= 1000) {
+      return '${(amount / 1000).toStringAsFixed(0)}K';
+    }
+    return NumberFormat('#,##0').format(amount);
+  }
+
   static String getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) {
